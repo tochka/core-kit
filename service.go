@@ -116,11 +116,11 @@ func NewService(opts ...Option) Service {
 		streamAPIHandler: streamWrapAPIHandler(options.logger),
 	}
 
-	service.options.serveMux.Add(http.MethodGet, "/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	service.options.serveMux.Add(http.MethodGet, "/health/status", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
-	service.options.serveMux.Add(http.MethodGet, "/info", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	service.options.serveMux.Add(http.MethodGet, "/service/info", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")
 		dp := map[string]interface{}{}
 		for name, d := range options.dependenciesInfo {
@@ -134,7 +134,7 @@ func NewService(opts ...Option) Service {
 		})
 	}))
 
-	service.options.serveMux.Add(http.MethodGet, "/metrics", promhttp.Handler())
+	service.options.serveMux.Add(http.MethodGet, "/service/metrics", promhttp.Handler())
 
 	return service
 }
