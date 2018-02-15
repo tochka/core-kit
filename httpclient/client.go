@@ -15,6 +15,7 @@ import (
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
+
 type VirgilHttpClient struct {
 	Client         HTTPClient
 	ServiceAddress string
