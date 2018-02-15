@@ -134,6 +134,7 @@ func NewService(opts ...Option) Service {
 		})
 	}))
 
+	initMetrics(options.name)
 	service.options.serveMux.Add(http.MethodGet, "/service/metrics", promhttp.Handler())
 
 	return service
@@ -168,7 +169,7 @@ func (s *service) Run() {
 
 	server := http.Server{
 		Addr:    fmt.Sprint(":", s.options.port),
-		Handler: s.options.serveMux,
+		Handler: rps(s.options.serveMux),
 	}
 
 	ch := make(chan os.Signal)
