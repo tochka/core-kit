@@ -3,6 +3,8 @@ package corekit
 import (
 	"encoding/json"
 	"net/http"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -15,8 +17,14 @@ var (
 	errorMetric prometheus.Counter
 )
 
+var regReplacer = regexp.MustCompile("[^a-zA-Z0-9_:]+")
+
 // initMetrics is executed in NewService
 func initMetrics(serviceName string) {
+	serviceName = strings.ToLower(serviceName)
+	serviceName = strings.Replace(serviceName, " ", "_", -1)
+	serviceName = regReplacer.ReplaceAllString(serviceName, "")
+
 	httpMetric = prometheus.NewSummary(prometheus.SummaryOpts{
 		Name:       "http_durations_seconds",
 		Namespace:  "service_" + serviceName,
