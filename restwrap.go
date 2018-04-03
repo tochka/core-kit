@@ -61,7 +61,7 @@ func wrapAPIHandler(log func(format string, args ...interface{})) func(handler A
 				}
 				w.WriteHeader(apiErr.StatusCode)
 
-				if apiErr.StatusCode != http.StatusBadRequest {
+				if apiErr.StatusCode != http.StatusBadRequest && apiErr.StatusCode != http.StatusTeapot {
 					return
 				}
 
