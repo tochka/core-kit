@@ -117,10 +117,16 @@ func NewService(opts ...Option) Service {
 	}
 
 	service.options.serveMux.Add(http.MethodGet, "/health/status", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		service.options.logger("[INFO] /health/status was deprecated. Please use /_service/status.\n")
 		w.WriteHeader(http.StatusOK)
 	}))
 
-	service.options.serveMux.Add(http.MethodGet, "/service/info", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	// It's duplicate for new way convention
+	service.options.serveMux.Add(http.MethodGet, "/_service/status", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	infoH := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")
 		dp := map[string]interface{}{}
 		for name, d := range options.dependenciesInfo {
@@ -132,10 +138,22 @@ func NewService(opts ...Option) Service {
 			"params":       options.params,
 			"dependencies": dp,
 		})
+	})
+	service.options.serveMux.Add(http.MethodGet, "/service/info", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		service.options.logger("[INFO] /service/info was deprecated. Please use /_service/info.\n")
+		infoH.ServeHTTP(w, r)
 	}))
+	// It's duplicate for new way convention
+	service.options.serveMux.Add(http.MethodGet, "/_service/info", infoH)
 
 	initMetrics(options.name)
-	service.options.serveMux.Add(http.MethodGet, "/service/metrics", promhttp.Handler())
+	metricsH := promhttp.Handler()
+	service.options.serveMux.Add(http.MethodGet, "/service/metrics", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		service.options.logger("[INFO] /service/metrics was deprecated. Please use /_service/metrics.\n")
+		metricsH.ServeHTTP(w, r)
+	}))
+	// It's duplicate for new way convention
+	service.options.serveMux.Add(http.MethodGet, "/_service/metrics", metricsH)
 
 	return service
 }
