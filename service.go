@@ -104,7 +104,7 @@ func Logger(l func(format string, args ...interface{})) Option {
 
 func NewService(opts ...Option) Service {
 
-	defaultLogger := log.New(os.Stdout, "", log.LUTC|log.LstdFlags|log.Lshortfile)
+	defaultLogger := log.New(os.Stdout, "", log.LUTC|log.LstdFlags|log.Lmicroseconds)
 
 	options := &Options{
 		dependenciesInfo: map[string]func() interface{}{},
