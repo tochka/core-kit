@@ -35,6 +35,7 @@ type Option func(o *Options)
 type Options struct {
 	name             string
 	version          string
+	dependencies     map[string]func() error
 	dependenciesInfo map[string]func() interface{}
 	params           map[string]string
 	port             int
@@ -60,6 +61,12 @@ func Version(v string) Option {
 func DependencyInfo(name string, f func() interface{}) Option {
 	return func(o *Options) {
 		o.dependenciesInfo[name] = f
+	}
+}
+
+func Dependency(name string, f func() error) Option {
+	return func(o *Options) {
+		o.dependencies[name] = f
 	}
 }
 
