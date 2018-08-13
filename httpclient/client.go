@@ -26,9 +26,16 @@ func (c *VirgilHttpClient) Send(ctx context.Context, method string, url string, 
 	var err error
 
 	if payload != nil {
-		reqBody, err = json.Marshal(payload)
-		if err != nil {
-			return errors.Wrap(err, "HttpClient.Send [JSON marshal payload]")
+		switch v := payload.(type) {
+		case []byte:
+			reqBody = v
+		case string:
+			reqBody = []byte(v)
+		default:
+			reqBody, err = json.Marshal(payload)
+			if err != nil {
+				return errors.Wrap(err, "HttpClient.Send [JSON marshal payload]")
+			}
 		}
 	}
 	req, err := http.NewRequest(method, fmt.Sprint(c.ServiceAddress, url), bytes.NewReader(reqBody))
