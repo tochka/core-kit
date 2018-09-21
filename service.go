@@ -107,7 +107,8 @@ func NewService(opts ...Option) Service {
 	defaultLogger := log.New(os.Stdout, "", log.LUTC|log.LstdFlags|log.Lmicroseconds)
 
 	options := &Options{
-		dependenciesInfo: map[string]func() interface{}{},
+		dependenciesInfo: make(map[string]func() interface{}),
+		dependencies:     make(map[string]func() error),
 		params:           map[string]string{},
 		serveMux:         &adoptPatRouter{pat.New()},
 		logger:           defaultLogger.Printf,
@@ -152,6 +153,17 @@ func NewService(opts ...Option) Service {
 	}))
 	// It's duplicate for new way convention
 	service.options.serveMux.Add(http.MethodGet, "/_service/info", infoH)
+
+	service.options.serveMux.Add(http.MethodGet, "/_service/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		statusCode := http.StatusOK
+		for name, check := range options.dependencies {
+			if err := check(); err != nil {
+				statusCode = http.StatusInternalServerError
+				service.options.logger("[ERROR] %v dependency: %+v\n", name, err)
+			}
+		}
+		w.WriteHeader(statusCode)
+	}))
 
 	initMetrics(options.name)
 	metricsH := promhttp.Handler()
