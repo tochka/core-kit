@@ -49,9 +49,17 @@ func (c *VirgilHttpClient) Send(ctx context.Context, method string, url string, 
 		return errors.Wrapf(err, "HttpClient.Send [Send request]")
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusNotFound {
+	switch resp.StatusCode {
+	case http.StatusNotFound:
 		return apierror.EntityNotFoundErr
+	case http.StatusInternalServerError:
+		return apierror.InternalServerErr
+	case http.StatusUnauthorized:
+		return apierror.UnauthorizedRequestErr
+	case http.StatusForbidden:
+		return apierror.ForbiddenErr
 	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return errors.Wrapf(err, "HttpClient.Send [ReadBody (Method: %s Path: %s Body: %s)]", method, url, reqBody)
