@@ -67,9 +67,11 @@ func (c *VirgilHttpClient) Send(ctx context.Context, method string, url string, 
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 { // http status code seccess
 		var verr apierror.APIError
-		err = json.Unmarshal(body, &verr)
-		if err != nil {
-			return errors.Wrapf(err, "HttpClient.Send [UnmarshalResponseErr(status code: %v body: %s)]", resp.StatusCode, body)
+		if len(body) != 0 {
+			err = json.Unmarshal(body, &verr)
+			if err != nil {
+				return errors.Wrapf(err, "HttpClient.Send [UnmarshalResponseErr(status code: %v body: %s)]", resp.StatusCode, body)
+			}
 		}
 		verr.StatusCode = resp.StatusCode
 		return verr
