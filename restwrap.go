@@ -75,7 +75,22 @@ func wrapAPIHandler(log func(format string, args ...interface{})) func(handler A
 				return
 			}
 
-			w.WriteHeader(http.StatusOK)
+			if resp, ok := result.(Response); ok {
+				for k := range resp.Header {
+					w.Header().Add(k, resp.Header.Get(k))
+				}
+				if resp.StatusCode == 0 {
+					resp.StatusCode = http.StatusOK
+				}
+				w.WriteHeader(resp.StatusCode)
+				result = resp.Payload
+				if result == nil {
+					return
+				}
+			} else {
+				w.WriteHeader(http.StatusOK)
+			}
+
 			var body []byte
 			if body, ok = result.([]byte); !ok {
 				body, _ = json.Marshal(result)
@@ -94,4 +109,11 @@ func rps(handler http.Handler) http.Handler {
 		httpMetric.Observe(time.Since(begin).Seconds())
 	}
 	return http.HandlerFunc(wrap)
+}
+
+// Response is structure for HTTP response
+type Response struct {
+	StatusCode int
+	Header     http.Header
+	Payload    interface{}
 }
