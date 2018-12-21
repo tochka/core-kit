@@ -129,8 +129,12 @@ func NewService(opts ...Option) Service {
 		w.WriteHeader(http.StatusOK)
 	}))
 
-	// It's duplicate for new way convention
+	// It's duplicate for deprecated way convention
 	service.options.serveMux.Add(http.MethodGet, "/_service/status", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	// It's duplicate for new way convention
+	service.options.serveMux.Add(http.MethodGet, "/_service/liveness", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
@@ -154,7 +158,7 @@ func NewService(opts ...Option) Service {
 	// It's duplicate for new way convention
 	service.options.serveMux.Add(http.MethodGet, "/_service/info", infoH)
 
-	service.options.serveMux.Add(http.MethodGet, "/_service/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	readnessH := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		statusCode := http.StatusOK
 		for name, check := range options.dependencies {
 			if err := check(); err != nil {
@@ -163,7 +167,10 @@ func NewService(opts ...Option) Service {
 			}
 		}
 		w.WriteHeader(statusCode)
-	}))
+	})
+	service.options.serveMux.Add(http.MethodGet, "/_service/health", readnessH)
+	// It's duplicate for new way convention
+	service.options.serveMux.Add(http.MethodGet, "/_service/readiness", readnessH)
 
 	initMetrics(options.name)
 	metricsH := promhttp.Handler()
