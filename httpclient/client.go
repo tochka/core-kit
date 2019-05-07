@@ -50,7 +50,9 @@ func (c *VirgilHttpClient) SendWithHeader(ctx context.Context, method string, ur
 	for k := range header {
 		req.Header.Add(k, header.Get(k))
 	}
-	req.Header.Add("content-type", "application/json")
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	resp, err := c.getHTTPClient().Do(req)
 	if err != nil {
