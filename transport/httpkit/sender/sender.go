@@ -11,6 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/tochka/core-kit/build"
+
 	"github.com/tochka/core-kit/codec/json"
 
 	"github.com/tochka/core-kit/apikit"
@@ -113,6 +115,9 @@ func (s *Sender) SendWithResponse(ctx context.Context, req *Request) (result *Re
 	}
 	if r.Header.Get("Accept") == "" {
 		r.Header.Set("Accept", cd.Name())
+	}
+	if r.Header.Get("User-Agent") == "" {
+		r.Header.Set("User-Agent", build.ServiceName+"/"+build.Version)
 	}
 
 	resp, err := s.options.httpClient.Do(r)
