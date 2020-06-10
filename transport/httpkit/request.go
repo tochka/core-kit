@@ -1,6 +1,7 @@
 package httpkit
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 
@@ -31,4 +32,9 @@ func (r *Request) Unmarshal(obj interface{}) error {
 
 func (r *Request) Param(key string) string {
 	return r.param(r.Request, key)
+}
+
+func (r *Request) WithContext(ctx context.Context) *Request {
+	r.Request = r.Request.WithContext(ctx)
+	return r
 }
